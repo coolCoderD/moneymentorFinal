@@ -1,12 +1,26 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import Link from "@mui/material/Link";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-const Register = () => {
-  const [error, setError] = useState("");
+const defaultTheme = createTheme();
+
+export default function SignIn() {
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [data, setData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const { data: session, status: sessionStatus } = useSession();
 
   useEffect(() => {
@@ -19,10 +33,10 @@ const Register = () => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     return emailRegex.test(email);
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = e.target[0].value;
-    const password = e.target[1].value;
+    const { email, password } = data;
 
     if (!isValidEmail(email)) {
       setError("Email is invalid");
@@ -30,11 +44,12 @@ const Register = () => {
     }
 
     if (!password || password.length < 8) {
-      setError("Password is invalid");
+      setError("Password needs to be more than 8 chars");
       return;
     }
 
     try {
+      setLoading(true);
       const res = await fetch("/api/register", {
         method: "POST",
         headers: {
@@ -46,15 +61,18 @@ const Register = () => {
         }),
       });
       if (res.status === 400) {
+        setLoading(false);
         setError("This email is already registered");
       }
       if (res.status === 200) {
+        setLoading(false);
         setError("");
         router.push("/auth/login");
       }
     } catch (error) {
       setError("Error, try again");
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -63,42 +81,81 @@ const Register = () => {
   }
 
   return (
-    sessionStatus !== "authenticated" && (
-      <div className="flex min-h-screen flex-col items-center justify-between p-24">
-        <div className="bg-[#212121] p-8 rounded shadow-md w-96">
-          <h1 className="text-4xl text-center font-semibold mb-8">Register</h1>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              className="w-full border border-gray-300 text-black rounded px-3 py-2 mb-4 focus:outline-none focus:border-blue-400 focus:text-black"
-              placeholder="Email"
-              required
-            />
-            <input
-              type="password"
-              className="w-full border border-gray-300 text-black rounded px-3 py-2 mb-4 focus:outline-none focus:border-blue-400 focus:text-black"
-              placeholder="Password"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-            >
-              Register
-            </button>
-            <p className="text-red-600 text-[16px] mb-4">{error && error}</p>
-          </form>
-          <div className="text-center text-gray-500 mt-4">- OR -</div>
-          <Link
-            className="block text-center text-blue-500 hover:underline mt-2"
-            href="/auth/login"
+    !session && (
+      <ThemeProvider theme={defaultTheme}>
+        <Container component="main" maxWidth="xs">
+          <CssBaseline />
+          <Box
+            sx={{
+              marginTop: 8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
           >
-            Login with an existing account
-          </Link>
-        </div>
-      </div>
+            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Sign up
+            </Typography>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ mt: 1 }}
+            >
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                onChange={(e) => setData({ ...data, email: e.target.value })}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                onChange={(e) => setData({ ...data, password: e.target.value })}
+              />
+
+              {error && (
+                <Typography color="error" variant="body2">
+                  {error}
+                </Typography>
+              )}
+
+              <div className="mt-3 mb-3">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  fullWidth
+                  variant="contained"
+                >
+                  Sign Up
+                </Button>
+              </div>
+
+              <Grid container>
+                <Grid item>
+                  <Link href="/auth/login" variant="body2">
+                    {"Already have an account? Sign in"}
+                  </Link>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Container>
+      </ThemeProvider>
     )
   );
-};
-
-export default Register;
+}
