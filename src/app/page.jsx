@@ -1,9 +1,10 @@
 "use client";
-import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { Button } from "@mui/material";
-import AccordionUsage from "@/components/Accordion";
+import FaqAccordion from "@/components/FaqAccordion";
+import Navbar from "@/components/Navbar";
+import Slider from "@/components/Slider";
+import FinacialPlanning from "@/components/FinancialPlanning";
 
 const Page = () => {
   const { data: session } = useSession();
@@ -15,17 +16,21 @@ const Page = () => {
   return (
     session && (
       <div>
-        <p>{session?.user?.email}</p>
-        <p>{session?.user?.role}</p>
+        <Navbar />
+        <p>Welcome {session?.user?.email}</p>
         <br />
 
-        <div className="mx-2">
-          <AccordionUsage />
+        <div className="mx-4 my-8 md:mx-20 xl:mx-28">
+          <FinacialPlanning />
         </div>
-        <br />
-        <Button variant="contained" color="error" onClick={() => signOut()}>
-          Sign out
-        </Button>
+
+        <div className="mx-4 my-8 md:mx-20 xl:mx-28">
+          <Slider />
+        </div>
+
+        <div className="mx-4 my-8 md:mx-20 xl:mx-28">
+          <FaqAccordion />
+        </div>
       </div>
     )
   );
