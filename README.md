@@ -1,4 +1,4 @@
-## Money Mentor
+## Money Mentor: Your all-in-one financial guide.
 
 You can access the live version of the Money Mentor project here:
 
